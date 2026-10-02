@@ -5,7 +5,10 @@
 //
 // Drive it with press({ type, value }):
 //   digit, decimal, operator, paren, postfix, power, function, constant,
-//   wrap, sign, backspace, clear, equals, angle
+//   wrap, sign, backspace, clear, equals
+// and switch radians/degrees with toggleAngleMode(), which isn't an edit.
+
+import { CONSTANTS, evaluate } from './evaluate.js';
 
 const MAX_LENGTH = 32;
 const RESULT_DECIMALS = 14;
@@ -34,22 +37,28 @@ function resultTokens(value) {
     return rounded < 0 ? [token('sign', '-'), operand] : [operand];
 }
 
-function createCalculator() {
+export function createCalculator() {
     let tokens = [];
-    let justEvaluated = false;
-    let hasError = false;
+    let status = 'editing'; // 'editing', 'result' (just pressed "="), or 'error'
     let angleMode = 'deg';
 
     const last = () => tokens[tokens.length - 1];
     const room = () => MAX_LENGTH - textOf(tokens).length;
     const depth = () => tokens.reduce((d, t) => d + (t.type === 'open') - (t.type === 'close'), 0);
 
-    function push(...added) {
+    // Where the operand ending the expression begins, counting a sign attached
+    // to it: the "-" in "-8", but not the "-" in "5-8".
+    const operandStart = () => (tokens[tokens.length - 2]?.type === 'sign' ? tokens.length - 2 : tokens.length - 1);
+
+    // Every insertion goes through here so the length cap is enforced once.
+    function insert(index, added) {
         if (textOf(added).length > room()) {
             return;
         }
-        tokens.push(...added);
+        tokens.splice(index, 0, ...added);
     }
+
+    const push = (...added) => insert(tokens.length, added);
 
     // Starts a new operand (number, constant, "(" or function), inserting an
     // implicit "*" when it directly follows a value, e.g. "8" then "(" -> "8*(".
@@ -57,25 +66,27 @@ function createCalculator() {
         push(...(isValue(last()) ? [token('operator', '*'), ...added] : added));
     }
 
+    const isTypingNumber = () => last()?.type === 'number';
+
+    function appendToNumber(char) {
+        if (room() >= 1) {
+            last().text += char;
+        }
+    }
+
     function typeDigit(digit) {
-        const tail = last();
-        if (tail?.type === 'number') {
-            if (room() >= 1) {
-                tail.text += digit;
-            }
+        if (isTypingNumber()) {
+            appendToNumber(digit);
         } else {
             pushOperand(token('number', digit));
         }
     }
 
     function typeDecimal() {
-        const tail = last();
-        if (tail?.type === 'number') {
-            if (!tail.text.includes('.') && room() >= 1) {
-                tail.text += '.';
-            }
-        } else {
+        if (!isTypingNumber()) {
             pushOperand(token('number', '0.'));
+        } else if (!last().text.includes('.')) {
+            appendToNumber('.');
         }
     }
 
@@ -146,21 +157,11 @@ function createCalculator() {
     // closing paren to the auto-close at evaluation, e.g. "8" + "√(" -> "√(8".
     // Any other state just inserts the prefix, e.g. "√(" on a blank display.
     function wrapOperand(text) {
-        if (last()?.type !== 'number') {
+        if (isTypingNumber()) {
+            insert(operandStart(), [token('open', text)]);
+        } else {
             typeFunction(text);
-            return;
         }
-        insertBeforeOperand([token('open', text)]);
-    }
-
-    // Inserts tokens in front of the number at the end of the expression
-    // (and the sign attached to it, if any).
-    function insertBeforeOperand(added) {
-        if (textOf(added).length > room()) {
-            return;
-        }
-        const operandStart = tokens[tokens.length - 2]?.type === 'sign' ? tokens.length - 2 : tokens.length - 1;
-        tokens.splice(operandStart, 0, ...added);
     }
 
     // +/- on a number or constant flips its sign. With no operand yet (blank
@@ -169,17 +170,19 @@ function createCalculator() {
     function toggleSign() {
         const tail = last();
         if (tail?.type === 'number' || tail?.type === 'constant') {
-            const before = tokens[tokens.length - 2];
-            if (before?.type === 'sign') {
-                if (before.text === '-') {
-                    tokens.splice(tokens.length - 2, 1);
+            const start = operandStart();
+            const first = tokens[start]; // the operand's sign if it has one, else the operand itself
+            const before = tokens[start - 1];
+            if (first.type === 'sign') {
+                if (first.text === '-') {
+                    tokens.splice(start, 1);
                 } else {
-                    before.text = '-';
+                    first.text = '-';
                 }
             } else if (!before || before.type === 'open') {
-                insertBeforeOperand([token('sign', '-')]);
+                insert(start, [token('sign', '-')]);
             } else {
-                insertBeforeOperand([token('open', '('), token('sign', '-')]);
+                insert(start, [token('open', '('), token('sign', '-')]);
             }
         } else if (tail?.type === 'sign') {
             tokens.pop();
@@ -204,12 +207,13 @@ function createCalculator() {
         if (tokens.length === 0) {
             return;
         }
-        try {
-            tokens = resultTokens(evaluate(tokens, angleMode));
-            justEvaluated = true;
-        } catch (error) {
+        const value = evaluate(tokens, angleMode);
+        if (value === null) {
             tokens = [];
-            hasError = true;
+            status = 'error';
+        } else {
+            tokens = resultTokens(value);
+            status = 'result';
         }
     }
 
@@ -229,24 +233,22 @@ function createCalculator() {
         equals,
     };
 
-    const text = () => (hasError ? 'Error' : textOf(tokens));
+    const text = () => (status === 'error' ? 'Error' : textOf(tokens));
 
     return {
         press({ type, value }) {
-            // A mode switch, not an edit: leaves the expression (and whether
-            // it's a fresh result) untouched.
-            if (type === 'angle') {
-                angleMode = angleMode === 'rad' ? 'deg' : 'rad';
-                return;
-            }
             // Anything pressed after an error, or a digit pressed after "=",
             // starts a fresh calculation; operators and the like build on a result.
-            if (hasError || (justEvaluated && (type === 'digit' || type === 'decimal'))) {
+            if (status === 'error' || (status === 'result' && (type === 'digit' || type === 'decimal'))) {
                 tokens = [];
             }
-            hasError = false;
-            justEvaluated = false;
+            status = 'editing';
             handlers[type](value);
+        },
+
+        // Leaves the expression, and whether it's a fresh result, untouched.
+        toggleAngleMode() {
+            angleMode = angleMode === 'rad' ? 'deg' : 'rad';
         },
 
         get text() {
@@ -263,12 +265,12 @@ function createCalculator() {
             if (tokens.length === 0) {
                 return '';
             }
-            try {
-                const result = roundTo(evaluate(tokens, angleMode), PREVIEW_DECIMALS);
-                return String(result) === text() ? '' : '= ' + result;
-            } catch (error) {
+            const value = evaluate(tokens, angleMode);
+            if (value === null) {
                 return '';
             }
+            const result = roundTo(value, PREVIEW_DECIMALS);
+            return String(result) === text() ? '' : '= ' + result;
         },
     };
 }

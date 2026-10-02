@@ -14,10 +14,15 @@
 //   postfixed  := atom postfix*
 //   atom       := number | constant | open expression close?
 
-const CONSTANTS = {
+export const CONSTANTS = {
     'π': Math.PI,
     e: Math.E,
 };
+
+// Thrown inside the parser for input that has no value (incomplete expression,
+// division by zero, ...) and caught in evaluate(). Anything else that throws is
+// a bug and is left to surface.
+class InvalidExpression extends Error {}
 
 const toRadians = (x, angleMode) => (angleMode === 'deg' ? (x * Math.PI) / 180 : x);
 const fromRadians = (x, angleMode) => (angleMode === 'deg' ? (x * 180) / Math.PI : x);
@@ -35,8 +40,7 @@ function factorial(n) {
 
 // Keyed by the exact text shown on the display, so adding a function is a
 // one-line change here plus a key in the scientific keypad.
-const FUNCTIONS = {
-    '(': (x) => x,
+export const FUNCTIONS = {
     'sin(': (x, angleMode) => Math.sin(toRadians(x, angleMode)),
     'cos(': (x, angleMode) => Math.cos(toRadians(x, angleMode)),
     'tan(': (x, angleMode) => Math.tan(toRadians(x, angleMode)),
@@ -64,9 +68,21 @@ const POSTFIX = {
     '!': factorial,
 };
 
-// Throws if the tokens aren't a complete expression or the result isn't a
-// finite number (division by zero, sqrt of a negative, ...).
-function evaluate(tokens, angleMode) {
+// Returns the value of the tokens, or null if they aren't a complete
+// expression or the result isn't a finite number (division by zero, sqrt of a
+// negative, ...).
+export function evaluate(tokens, angleMode) {
+    try {
+        return parse(tokens, angleMode);
+    } catch (error) {
+        if (error instanceof InvalidExpression) {
+            return null;
+        }
+        throw error;
+    }
+}
+
+function parse(tokens, angleMode) {
     let pos = 0;
 
     const peek = () => tokens[pos];
@@ -124,23 +140,24 @@ function evaluate(tokens, angleMode) {
             case 'constant':
                 return token.value;
             case 'open': {
-                const value = FUNCTIONS[token.text](parseExpression(), angleMode);
+                const inner = parseExpression();
+                const value = token.text === '(' ? inner : FUNCTIONS[token.text](inner, angleMode);
                 if (peek()?.type === 'close') {
                     pos++;
                 }
                 return value;
             }
             default:
-                throw new SyntaxError('Expected a value');
+                throw new InvalidExpression('Expected a value');
         }
     }
 
     const value = parseExpression();
     if (pos < tokens.length) {
-        throw new SyntaxError('Unexpected token');
+        throw new InvalidExpression('Unexpected token');
     }
     if (!Number.isFinite(value)) {
-        throw new RangeError('Result is not a finite number');
+        throw new InvalidExpression('Result is not a finite number');
     }
     return value;
 }

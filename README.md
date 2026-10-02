@@ -24,13 +24,14 @@ A calculator built with semantic HTML, CSS, and vanilla JavaScript, modeled afte
 
 ## Running it
 
-Open `index.html` in a browser — no build step or dependencies required.
+No build step or dependencies required, but the scripts are ES modules, which browsers won't load from a `file://` URL. Serve the folder with any static server and open it, e.g. `python -m http.server` or `npx serve`, then visit `http://localhost:8000`.
 
 ## Structure
 
 - `index.html` — markup
 - `style/style.css` — styling, both themes, and the compact scientific-mode layout
-- `script/evaluate.js` — evaluates a token list to a number (a small recursive-descent parser; no `eval`)
+- `script/evaluate.js` — evaluates a token list to a number, or `null` if it has no value (a small recursive-descent parser; no `eval`)
 - `script/calculator.js` — calculator state and input rules as a token list, with no DOM access
-- `script/script.js` — DOM wiring: buttons, keyboard, the scientific keypad table, and rendering
+- `script/scientific-keys.js` — the scientific keypad as data (labels, shifted forms, actions), checked against `evaluate.js` on load
+- `script/script.js` — DOM wiring: buttons, keyboard, and rendering
 - `media/` — favicon
