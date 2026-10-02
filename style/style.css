@@ -2,7 +2,6 @@
     padding: 0;
     margin: 0;
     box-sizing: border-box;
-    transition: all 0.5s ease
 }
 
 button:focus-visible {
@@ -42,13 +41,26 @@ body {
     place-items: center;
 }
 
+:root {
+    --move: 350ms cubic-bezier(.2, .8, .2, 1);
+}
+
 .calculator {
     position: relative;
-    height: auto;
-    width: auto;
+    height: 630px;
+    width: 320px;
     padding: 20px;
     border-radius: 10px;
     box-shadow: 0 0 30px #000;
+    transition: background-color 300ms ease, width var(--move), height var(--move);
+}
+
+.calculator.compact {
+    width: 304px;
+}
+
+#preview {
+    transition: color 300ms ease;
 }
 
 .theme-toggler {
@@ -86,23 +98,17 @@ body {
     font-weight: bold;
     border-radius: 20px;
     cursor: pointer;
-    background-color: rgba(0, 0, 0, 0.08);
-    color: #333;
-}
-
-.calculator.dark .mode-toggler {
-    background-color: rgba(255, 255, 255, 0.15);
-    color: #fff;
+    background-color: var(--key);
+    color: var(--text);
 }
 
 .mode-toggler[aria-pressed="true"] {
-    background-color: #ffd0fd;
-    color: #f967f3;
+    background-color: var(--accent);
+    color: #fff;
 }
 
-.calculator.dark .mode-toggler[aria-pressed="true"] {
-    background-color: #2e1f39;
-    color: #aa00a4;
+.rotate-toggler {
+    left: 85px;
 }
 
 .theme-toggler.active {
@@ -142,6 +148,7 @@ body {
     height: 150px;
     width: auto;
     max-width: 270px;
+    transition: color 300ms ease, height var(--move), max-width var(--move);
     display: flex;
     align-items: flex-end;
     justify-content: flex-end;
@@ -163,19 +170,40 @@ button {
     margin: 5px;
     font-size: 20px;
     cursor: pointer;
-    transition: all 200ms ease;
+    transition:
+        background-color 250ms ease, color 250ms ease, box-shadow 250ms ease,
+        transform 120ms ease-out,
+        width var(--move), height var(--move), margin var(--move),
+        border-radius var(--move), font-size var(--move);
 }
 
-button:hover {
-    transform: scale(1.1);
+/* press feedback, like the phone: a quick squish and a soft colored glow */
+button:active {
+    transform: scale(0.94);
+    transition-duration: 60ms;
+}
+
+.calculator button.btn-number:active,
+.calculator button.btn-operator:active {
+    box-shadow: 0 0 14px 2px color-mix(in srgb, var(--accent) 55%, transparent);
+}
+
+.calculator button#clear:active {
+    box-shadow: 0 0 14px 2px color-mix(in srgb, var(--clear) 55%, transparent);
 }
 
 .buttons {
     display: grid;
-    grid-template-columns: repeat(4, auto);
+    grid-template-columns: repeat(4, 70px);
+    grid-template-rows: repeat(5, 70px);
+    gap: 0;
+    transition:
+        grid-template-columns var(--move), grid-template-rows var(--move),
+        gap var(--move), margin var(--move);
 }
 
 .scientific-buttons {
+    grid-template-rows: repeat(4, 70px);
     margin-bottom: 10px;
 }
 
@@ -190,26 +218,29 @@ button:hover {
     font-size: 13px;
 }
 
-#sci-shift[aria-pressed="true"] {
-    background-color: #adf9e7;
-    color: #000;
-}
+/* Every size below is a plain px / % / calc() value, never auto, none, 1fr or
+   999px, so all of it can transition together when the layout changes.
 
-.calculator.dark #sci-shift[aria-pressed="true"] {
-    background-color: #223323;
-    color: #fff;
-}
-
-/* Both keypads live in .pad, whose height never changes: 5 rows of the normal
-   keypad = 5 x (60px button + 2 x 5px margin). Scientific mode shrinks every
-   button into short, pill-shaped rows that add up to exactly that height
+   Both keypads live in .pad, whose height is fixed: 5 rows of the normal keypad
+   = 5 x (60px button + 2 x 5px margin). Scientific mode shrinks every button
+   into short, pill-shaped rows that add up to exactly that height
    (9 rows x (32px + 2 x 3px) + 8px gap), so the calculator itself stays put
    and only the buttons animate. */
 .pad {
-    height: calc(350px + 12px);
+    height: 362px;
     margin: -6px;
     padding: 6px;
     overflow: hidden; /* the padding/negative margin keep focus outlines from being clipped */
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    align-content: start;
+    column-gap: 0;
+    transition: height var(--move), column-gap var(--move);
+}
+
+.calculator.compact .buttons {
+    grid-template-columns: repeat(4, 66px);
+    grid-template-rows: repeat(5, 38px);
 }
 
 .calculator.compact .buttons button {
@@ -220,78 +251,136 @@ button:hover {
     font-size: 12px;
 }
 
+/* keeps the four scientific rows at the same 38px */
 .calculator.compact .scientific-buttons {
+    grid-template-rows: repeat(4, 38px);
     margin-bottom: 8px;
 }
 
+/* landscape: the keypad fills the width; with fx on, scientific keys sit on the left, like the phone.
+   Card 458px = 20 + 50 + 20 (preview) + 70 (display) + 20 + 258 (pad) + 20; 258px / 5 rows - 4 x 8px gap = 45.2px. */
 
+.calculator.landscape {
+    width: min(680px, 96vw);
+    height: 458px;
+}
 
+.calculator.landscape #display {
+    max-width: 620px;
+    height: 70px;
+}
 
+.calculator.landscape .pad {
+    height: 270px;
+    column-gap: 24px;
+}
 
-/* light theme */
+.calculator.landscape.compact .pad {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.calculator.landscape .buttons {
+    grid-template-columns: repeat(4, calc((100% - 24px) / 4));
+    grid-template-rows: repeat(5, 45.2px);
+    gap: 8px;
+}
+
+.calculator.landscape .scientific-buttons {
+    grid-template-rows: repeat(4, 58.5px); /* 4 rows fill the same 258px as the keypad's 5 */
+    margin-bottom: 0;
+}
+
+/* basic landscape: narrower pills (62% of the column) centred in wide columns */
+.calculator.landscape .buttons button {
+    width: 62%;
+    height: 45.2px;
+    margin: 0 0 0 19%;
+    border-radius: 22.6px; /* half the height, so the pill shape grows with the animation */
+    font-size: 15px;
+}
+
+.calculator.landscape .scientific-buttons button {
+    height: 58.5px;
+    border-radius: 29.25px;
+}
+
+.calculator.landscape.compact .buttons button {
+    width: 100%;
+    margin: 0;
+}
+
+/* palette, matched to the phone's calculator (light / dark; green / blue accent) */
 
 .calculator {
-    background-color: #fff;
+    --bg: #f7f7f7;
+    --key: #fcfcfc;
+    --key-shadow: 0 6px 12px rgba(0, 0, 0, 0.08);
+    --op: #dedede;
+    --sci: #e9ecf5;
+    --text: #222;
+    --clear: #e8685f;
+    --accent: #22b573;
+    background-color: var(--bg);
 }
 
-.calculator #display {
-    color: #0a1e23;
+.calculator.dark {
+    --bg: #000;
+    --key: #1b1b1d;
+    --key-shadow: none;
+    --op: #2a2a2c;
+    --sci: #181d33;
+    --text: #f8f8f8;
+    --accent: #1f8f7b;
 }
 
+/* scientific layouts use the blue accent */
+.calculator.compact {
+    --accent: #4a86f7;
+}
+
+.calculator.dark.compact {
+    --accent: #3a56c8;
+}
+
+.calculator #display,
 .calculator #preview {
-    color: #0a1e23;
-}
-
-.calculator button#clear {
-    background-color: #ffd5d8;
-    color: #fc4552;
+    color: var(--text);
 }
 
 .calculator button.btn-number {
-    background-color: #c3eaff;
-    color: #000;
+    background-color: var(--key);
+    color: var(--text);
+    box-shadow: var(--key-shadow);
 }
 
 .calculator button.btn-operator {
-    background-color: #ffd0fd;
-    color: #f967f3;
+    background-color: var(--op);
+    color: var(--text);
+    box-shadow: var(--key-shadow);
+}
+
+.calculator button#clear {
+    background-color: var(--key);
+    color: var(--clear);
 }
 
 .calculator button.btn-equal {
-    background-color: #adf9e7;
-    color: #000;
+    background-color: var(--accent);
+    color: #fff;
 }
 
-/* dark theme */
-
-.calculator.dark {
-    background-color: #071115;
+.calculator .scientific-buttons button.btn-operator {
+    background-color: var(--sci);
+    color: var(--text);
 }
 
-.calculator.dark #display {
-    color: #f8fafd;
+.calculator .scientific-buttons button#sci-shift[aria-pressed="true"] {
+    background-color: var(--accent);
+    color: #fff;
 }
 
-.calculator.dark #preview {
-    color: #f8fafd;
-}
-
-.calculator.dark button#clear {
-    background-color: #2d191e;
-    color: #bd3740;
-}
-
-.calculator.dark button.btn-number {
-    background-color: #1b2f38;
-    color: #f8fafb;
-}
-
-.calculator.dark button.btn-operator {
-    background-color: #2e1f39;
-    color: #aa00a4;
-}
-
-.calculator.dark button.btn-equal {
-    background-color: #223323;
-    color: #ffffff;
+@media (prefers-reduced-motion: reduce) {
+    *, *::before {
+        transition-duration: 1ms !important;
+    }
 }
