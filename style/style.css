@@ -200,19 +200,28 @@ button:hover {
     color: #fff;
 }
 
-/* Scientific mode: shrink every button (both grids) into short, pill-shaped
-   rows so the buttons area keeps roughly the same total height it has in
-   normal mode instead of the calculator growing taller. */
+/* Both keypads live in .pad, whose height never changes: 5 rows of the normal
+   keypad = 5 x (60px button + 2 x 5px margin). Scientific mode shrinks every
+   button into short, pill-shaped rows that add up to exactly that height
+   (9 rows x (32px + 2 x 3px) + 8px gap), so the calculator itself stays put
+   and only the buttons animate. */
+.pad {
+    height: calc(350px + 12px);
+    margin: -6px;
+    padding: 6px;
+    overflow: hidden; /* the padding/negative margin keep focus outlines from being clipped */
+}
+
 .calculator.compact .buttons button {
-    height: 34px;
+    height: 32px;
     width: 60px;
-    border-radius: 17px;
+    border-radius: 16px;
     margin: 3px;
     font-size: 12px;
 }
 
 .calculator.compact .scientific-buttons {
-    margin-bottom: 4px;
+    margin-bottom: 8px;
 }
 
 

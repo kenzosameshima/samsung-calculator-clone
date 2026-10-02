@@ -27,5 +27,7 @@ Open `index.html` in a browser — no build step or dependencies required.
 
 - `index.html` — markup
 - `style/style.css` — styling, both themes, and the compact scientific-mode layout
-- `script/script.js` — calculator logic
+- `script/evaluate.js` — evaluates a token list to a number (a small recursive-descent parser; no `eval`)
+- `script/calculator.js` — calculator state and input rules as a token list, with no DOM access
+- `script/script.js` — DOM wiring: buttons, keyboard, the scientific keypad table, and rendering
 - `media/` — favicon

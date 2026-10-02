@@ -6,6 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/png" href="media/favicon/favicon.ico">
     <link rel="stylesheet" href="style/style.css">
+    <script src="script/evaluate.js" defer></script>
+    <script src="script/calculator.js" defer></script>
     <script src="script/script.js" defer></script>
     <title>Calculator</title>
 </head>
@@ -20,53 +22,38 @@
             <output id="preview" aria-hidden="true"></output>
             <output id="display" aria-live="polite" aria-atomic="true"></output>
 
-            <div class="buttons scientific-buttons" id="scientific-buttons" role="group" aria-label="Scientific functions" hidden>
-                <button type="button" class="btn-operator" id="sci-shift" data-sci="shift" aria-pressed="false" aria-label="Shift">2nd</button>
-                <button type="button" class="btn-operator" id="sci-angle" data-sci="angle" aria-label="Angle unit: degrees">Deg</button>
-                <button type="button" class="btn-operator" data-sci="sqrt" aria-label="Square root">&radic;</button>
-                <button type="button" class="btn-operator" data-sci="abs" aria-label="Absolute value">|x|</button>
+            <div class="pad">
+                <div class="buttons scientific-buttons" id="scientific-buttons" role="group" aria-label="Scientific functions" hidden>
+                    <button type="button" class="btn-operator" id="sci-shift" aria-pressed="false" aria-label="Shift">2nd</button>
+                    <button type="button" class="btn-operator" id="sci-angle" aria-label="Angle unit: degrees">Deg</button>
+                </div>
 
-                <button type="button" class="btn-operator" data-sci="sin" aria-label="Sine">sin</button>
-                <button type="button" class="btn-operator" data-sci="cos" aria-label="Cosine">cos</button>
-                <button type="button" class="btn-operator" data-sci="tan" aria-label="Tangent">tan</button>
-                <button type="button" class="btn-operator" data-sci="pi" aria-label="Pi">&pi;</button>
+                <div class="buttons" id="keypad" role="group" aria-label="Calculator keypad">
+                    <button type="button" class="btn-operator" id="clear" data-type="clear" aria-label="Clear">C</button>
+                    <button type="button" class="btn-operator" data-type="backspace" aria-label="Backspace">&#9003;</button>
+                    <button type="button" class="btn-operator" data-type="postfix" data-value="%" aria-label="Percent">&percnt;</button>
+                    <button type="button" class="btn-operator" data-type="operator" data-value="/" aria-label="Divide">&divide;</button>
 
-                <button type="button" class="btn-operator" data-sci="ln" aria-label="Natural log">ln</button>
-                <button type="button" class="btn-operator" data-sci="log" aria-label="Log base 10">log</button>
-                <button type="button" class="btn-operator" data-sci="reciprocal" aria-label="Reciprocal">1/x</button>
-                <button type="button" class="btn-operator" data-sci="econst" aria-label="Euler's number">e</button>
+                    <button type="button" class="btn-number" data-type="digit" data-value="7">7</button>
+                    <button type="button" class="btn-number" data-type="digit" data-value="8">8</button>
+                    <button type="button" class="btn-number" data-type="digit" data-value="9">9</button>
+                    <button type="button" class="btn-operator" data-type="operator" data-value="*" aria-label="Multiply">&times;</button>
 
-                <button type="button" class="btn-operator" data-sci="exp" aria-label="e to the x">e^x</button>
-                <button type="button" class="btn-operator" data-sci="square" aria-label="x squared">x&sup2;</button>
-                <button type="button" class="btn-operator" data-sci="power" aria-label="x to the y">x^y</button>
-                <button type="button" class="btn-operator" data-sci="sign" aria-label="Toggle sign">+/-</button>
-            </div>
+                    <button type="button" class="btn-number" data-type="digit" data-value="4">4</button>
+                    <button type="button" class="btn-number" data-type="digit" data-value="5">5</button>
+                    <button type="button" class="btn-number" data-type="digit" data-value="6">6</button>
+                    <button type="button" class="btn-operator" data-type="operator" data-value="-" aria-label="Subtract">-</button>
 
-            <div class="buttons" role="group" aria-label="Calculator keypad">
-                <button type="button" class="btn-operator" data-operator="clear" id="clear" aria-label="Clear">C</button>
-                <button type="button" class="btn-operator" data-operator="backspace" aria-label="Backspace">&#9003;</button>
-                <button type="button" class="btn-operator" data-operator="percentage" id="percentage" aria-label="Percent">&percnt;</button>
-                <button type="button" class="btn-operator" data-operator="/" aria-label="Divide">&divide;</button>
+                    <button type="button" class="btn-number" data-type="digit" data-value="1">1</button>
+                    <button type="button" class="btn-number" data-type="digit" data-value="2">2</button>
+                    <button type="button" class="btn-number" data-type="digit" data-value="3">3</button>
+                    <button type="button" class="btn-operator" data-type="operator" data-value="+" aria-label="Add">+</button>
 
-                <button type="button" class="btn-number" id="7">7</button>
-                <button type="button" class="btn-number" id="8">8</button>
-                <button type="button" class="btn-number" id="9">9</button>
-                <button type="button" class="btn-operator" data-operator="*" aria-label="Multiply">&times;</button>
-
-                <button type="button" class="btn-number" id="4">4</button>
-                <button type="button" class="btn-number" id="5">5</button>
-                <button type="button" class="btn-number" id="6">6</button>
-                <button type="button" class="btn-operator" id="-" data-operator="-" aria-label="Subtract">-</button>
-
-                <button type="button" class="btn-number" id="1">1</button>
-                <button type="button" class="btn-number" id="2">2</button>
-                <button type="button" class="btn-number" id="3">3</button>
-                <button type="button" class="btn-operator" id="+" data-operator="+" aria-label="Add">+</button>
-
-                <button type="button" class="btn-operator" data-operator="()" id="()" aria-label="Parenthesis">()</button>
-                <button type="button" class="btn-number" id="0">0</button>
-                <button type="button" class="btn-operator" id="." aria-label="Decimal point">.</button>
-                <button type="button" class="btn-operator btn-equal" data-operator="=" id="btn-equal" aria-label="Equals">=</button>
+                    <button type="button" class="btn-operator" data-type="paren" aria-label="Parenthesis">()</button>
+                    <button type="button" class="btn-number" data-type="digit" data-value="0">0</button>
+                    <button type="button" class="btn-operator" data-type="decimal" aria-label="Decimal point">.</button>
+                    <button type="button" class="btn-operator btn-equal" data-type="equals" aria-label="Equals">=</button>
+                </div>
             </div>
         </section>
     </main>
