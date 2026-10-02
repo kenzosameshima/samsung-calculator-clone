@@ -108,6 +108,11 @@ sciToggleBtn.addEventListener('click', () => {
     calculator.classList.toggle('compact', isOpen);
 });
 
+document.querySelector('#rotate-toggle').addEventListener('click', (event) => {
+    const isLandscape = calculator.classList.toggle('landscape');
+    event.currentTarget.setAttribute('aria-pressed', String(isLandscape));
+});
+
 themeToggleBtn.addEventListener('click', () => {
     calculator.classList.toggle('dark');
     themeToggleBtn.classList.toggle('active');
