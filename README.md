@@ -20,7 +20,8 @@ A calculator built with semantic HTML, CSS, and vanilla JavaScript, modeled afte
 - `+/-` flips the sign of the number or constant you just entered (`8-5` becomes `8-(-5`); on a blank expression or after an operator it toggles a `(-` opener
 - Results that JavaScript prints in exponent form (e.g. `1e-7`) are kept as a single value, so you can keep calculating with them
 - After an `Error`, the next key starts a fresh calculation; pressing `=` on an empty display does nothing
-- Light/dark theme toggle
+- Light/dark theme toggle, with colors matched to the phone's calculator (green accent in basic mode, blue in scientific)
+- A rotate button (↻) that switches to a landscape layout: the keypad fills the width, or with `fx` on, scientific keys sit beside it; the rotation animates smoothly
 
 ## Running it
 
@@ -29,7 +30,7 @@ Open `index.html` in a browser — no build step or dependencies required.
 ## Structure
 
 - `index.html` — markup
-- `style/style.css` — styling, both themes, and the compact scientific-mode layout
+- `style/style.css` — styling: the CSS-variable palette (both themes), the compact scientific-mode layout, and the landscape layout
 - `script/evaluate.js` — evaluates a token list to a number (a small recursive-descent parser; no `eval`)
 - `script/calculator.js` — calculator state and input rules as a token list, with no DOM access
 - `script/script.js` — DOM wiring: buttons, keyboard, the scientific keypad table, and rendering
