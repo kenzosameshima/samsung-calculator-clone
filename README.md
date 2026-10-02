@@ -14,9 +14,12 @@ A calculator built with semantic HTML, CSS, and vanilla JavaScript, modeled afte
   - unmatched `(` are closed automatically when you press `=`
 - Operators that build the expression as readable text rather than computing immediately, e.g. typing `8%` shows `8%` and previews `0.08`; `8` then `x²` shows `8^(2)`; `8` then `√` shows `√(8`; `%` also works after a closed group, e.g. `(5+3)%`
 - Keyboard input: digits, `+ - * / ( ) . %`, Enter/`=` to evaluate, Backspace, and Escape/Delete to clear
-- A scientific mode (toggled with the `fx` button) with a `2nd` shift key, independent radian/degree switching, trig (with inverses), hyperbolic functions, `ln`/`log`, `√`/`∛`, `|x|`/`2^x`, `1/x`, `π`/`e`, `x²`/`x³`, `x^y`, `x!`, and `+/-` — toggling it shrinks every button into a compact pill-shaped layout so the calculator doesn't grow taller
+- A scientific mode (toggled with the `fx` button) with a `2nd` shift key, independent radian/degree switching, trig (with inverses), hyperbolic functions, `ln`/`log`, `√`/`∛`, `|x|`/`2^x`, `1/x`, `π`/`e`, `x²`/`x³`, `x^y` (inserts `^(`, e.g. `2` then `x^y` shows `2^(`), `x!`, and `+/-` — toggling it shrinks every button into a compact pill-shaped layout inside a fixed-height keypad area, so the calculator itself never changes size
 - Pressing an operator right after `=` continues from the previous result; typing a digit starts a fresh calculation
-- Backspace removes an entire function prefix (`sin(`, `log(`, `√(`, ...) in one step instead of leaving a broken partial name behind
+- Backspace removes an entire function prefix (`sin(`, `log(`, `√(`, ...) in one step instead of leaving a broken partial name behind, and steps through `^(2)` one character at a time — a half-deleted expression such as `(8^(2` still evaluates (to `64`) because unclosed parentheses are closed automatically
+- `+/-` flips the sign of the number or constant you just entered (`8-5` becomes `8-(-5`); on a blank expression or after an operator it toggles a `(-` opener
+- Results that JavaScript prints in exponent form (e.g. `1e-7`) are kept as a single value, so you can keep calculating with them
+- After an `Error`, the next key starts a fresh calculation; pressing `=` on an empty display does nothing
 - Light/dark theme toggle
 
 ## Running it
