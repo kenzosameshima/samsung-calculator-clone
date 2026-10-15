@@ -21,9 +21,22 @@ button:focus-visible {
     border: 0;
 }
 
-/* The phone uses One UI Sans, which is Samsung's and can't be shipped. It is tried first
-   by name (it resolves where it is installed); Figtree, bundled under the SIL OFL, is the
-   closest open match, run a little lighter to match One UI's strokes. */
+/* The phone uses One UI Sans, which is Samsung's and can't be shipped. If you have its
+   predecessor, SamsungOne, drop SamsungOne-400.ttf / -700.ttf into media/fonts/samsung/
+   (git-ignored) and it is used; otherwise the font stack falls through to Figtree, bundled
+   under the SIL OFL, the closest open match, run a little lighter to match One UI's strokes. */
+@font-face {
+    font-family: 'SamsungOne';
+    src: url('../media/fonts/samsung/SamsungOne-400.ttf') format('truetype');
+    font-weight: 400;
+}
+
+@font-face {
+    font-family: 'SamsungOne';
+    src: url('../media/fonts/samsung/SamsungOne-700.ttf') format('truetype');
+    font-weight: 700;
+}
+
 @font-face {
     font-family: 'Figtree';
     src: url('../media/fonts/figtree-latin-wght-normal.woff2') format('woff2');
@@ -32,7 +45,7 @@ button:focus-visible {
 }
 
 body {
-    font-family: 'One UI Sans', 'SamsungOne', 'Figtree', sans-serif;
+    font-family: 'SamsungOne', 'One UI Sans', 'Figtree', sans-serif;
     font-weight: 350;
 }
 
