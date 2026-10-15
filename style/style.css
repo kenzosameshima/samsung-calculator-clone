@@ -174,11 +174,12 @@ body {
     z-index: -1;
 }
 
+/* A fixed width (the scientific card's inner width), right-aligned, so the
+   text is the same size in basic and scientific mode. */
 #display {
-    margin: 50px 10px 0;
+    margin: 50px 10px 0 auto;
     height: 110px;
-    width: auto;
-    max-width: 270px;
+    width: 244px;
     transition: color 300ms ease, height var(--move), max-width var(--move);
     display: flex;
     align-items: flex-end;
@@ -300,60 +301,115 @@ button:active {
     margin-bottom: 8px;
 }
 
-/* landscape: the keypad fills the width; with fx on, scientific keys sit on the left, like the phone.
-   Card 458px = 20 + 50 + 20 (preview) + 70 (display) + 20 + 258 (pad) + 20; 258px / 5 rows - 4 x 8px gap = 45.2px. */
+/* landscape, matched to the phone's (measured on a 2096 x 1080 landscape screen).
+   Basic mode is one keypad column, 59.6% wide and centred (20.2% margins), with the
+   history icon on its left edge and the fx / rotate icons on its right edge. With fx on,
+   the scientific keys take the left 45% and the keypad the right 49%, spanning the width
+   (2.9% margins). Positions are percentages of the card, which keeps the phone's 1.94:1
+   proportions at 890 x 458 (scale 0.424: pills 40px tall on a 48.8px pitch). */
 
 .calculator.landscape {
-    width: min(680px, 96vw);
+    width: min(890px, 96vw);
     height: 458px;
+    padding: 0;
+}
+
+.calculator.landscape .mode-toggler {
+    top: 21px;
+}
+
+.calculator.landscape #history-toggle {
+    left: 20.2%;
+}
+
+.calculator.landscape #sci-toggle {
+    left: auto;
+    right: 20.2%;
+}
+
+.calculator.landscape .rotate-toggler {
+    left: auto;
+    right: calc(20.2% + 60px);
+}
+
+.calculator.landscape .theme-toggler {
+    left: 50%;
+    right: auto;
+    top: 36px;
 }
 
 .calculator.landscape #display {
-    max-width: 620px;
+    width: auto;
+    margin: 86px 20.2% 0;
     height: 40px;
 }
 
 .calculator.landscape #preview {
-    height: 50px;
+    margin: 22px 20.2% 0;
+    height: 30px;
+    padding-top: 0;
 }
 
+/* .pad has 6px of padding (and clips to it), so it is 12px bigger than the keys inside it */
 .calculator.landscape .pad {
-    height: 270px;
-    column-gap: 24px;
-}
-
-.calculator.landscape.compact .pad {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    height: 247px;
+    margin: 18px calc(20.2% - 6px) 0;
 }
 
 .calculator.landscape .buttons {
-    grid-template-columns: repeat(4, calc((100% - 24px) / 4));
-    grid-template-rows: repeat(5, 45.2px);
-    gap: 8px;
+    grid-template-columns: repeat(4, 13.4%);
+    grid-template-rows: repeat(5, 40px);
+    justify-content: space-between;
+    gap: 8.8px 0;
 }
 
-.calculator.landscape .scientific-buttons {
-    grid-template-rows: repeat(4, 58.5px); /* 4 rows fill the same 258px as the keypad's 5 */
-    margin-bottom: 0;
-}
-
-/* basic landscape: narrower pills (62% of the column) centred in wide columns */
 .calculator.landscape .buttons button {
-    width: 62%;
-    height: 45.2px;
-    margin: 0 0 0 19%;
-    border-radius: 22.6px; /* half the height, so the pill shape grows with the animation */
+    width: 100%;
+    height: 40px;
+    margin: 0;
+    border-radius: 20px;
     font-size: 15px;
 }
 
-.calculator.landscape .scientific-buttons button {
-    height: 58.5px;
-    border-radius: 29.25px;
+.calculator.landscape .scientific-buttons {
+    grid-template-columns: repeat(4, 16.3%);
+    grid-template-rows: repeat(4, 43.3px);
+    row-gap: 20.3px;
+    margin-bottom: 0;
 }
 
-.calculator.landscape.compact .buttons button {
-    width: 100%;
-    margin: 0;
+.calculator.landscape .scientific-buttons button {
+    height: 43.3px;
+    border-radius: 21.65px;
+}
+
+.calculator.landscape.compact #history-toggle {
+    left: 2.9%;
+}
+
+.calculator.landscape.compact #sci-toggle {
+    right: 2.9%;
+}
+
+.calculator.landscape.compact .rotate-toggler {
+    right: calc(2.9% + 60px);
+}
+
+.calculator.landscape.compact #display,
+.calculator.landscape.compact #preview {
+    margin-left: 2.9%;
+    margin-right: 2.9%;
+}
+
+.calculator.landscape.compact .pad {
+    margin-left: calc(2.9% - 6px);
+    margin-right: calc(2.9% - 6px);
+    grid-template-columns: 45.2% 49.4%;
+    justify-content: space-between;
+}
+
+.calculator.landscape.compact #keypad {
+    grid-template-columns: repeat(4, 17.1%);
 }
 
 /* palette, matched to the phone's calculator (light / dark; green / blue accent) */
