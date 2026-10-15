@@ -1,0 +1,2 @@
+# Samsung's own fonts are proprietary: use them locally, never commit them
+media/fonts/samsung/
