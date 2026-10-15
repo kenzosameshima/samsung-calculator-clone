@@ -347,6 +347,31 @@ button:active {
     color: var(--text);
 }
 
+/* An expression "=" couldn't evaluate (1/0, sqrt of a negative) stays on the
+   display, tinted like the Clear key. */
+.calculator #display.invalid {
+    color: var(--clear);
+}
+
+.toast {
+    position: absolute;
+    left: 50%;
+    bottom: 70px;
+    transform: translateX(-50%);
+    padding: 8px 18px;
+    border-radius: 20px;
+    background: rgba(70, 70, 72, 0.92);
+    color: #f8f8f8;
+    font-size: 13px;
+    white-space: nowrap;
+    pointer-events: none;
+    z-index: 2;
+}
+
+.toast[hidden] {
+    display: none;
+}
+
 .calculator button.btn-number {
     background-color: var(--key);
     color: var(--text);

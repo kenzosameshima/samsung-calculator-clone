@@ -11,12 +11,38 @@ const sciPanel = document.querySelector('#scientific-buttons');
 const sciShiftBtn = document.querySelector('#sci-shift');
 const sciAngleBtn = document.querySelector('#sci-angle');
 
+const toast = document.querySelector('#toast');
+let toastTimer;
+
 const calc = createCalculator();
+
+function showToast(message) {
+    toast.textContent = message;
+    toast.hidden = false;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => { toast.hidden = true; }, 1800);
+}
+
+// Shrinks the display text as the expression grows (down to a floor, past
+// which the line scrolls), the way the phone does, instead of clipping it.
+const MAX_FONT_PX = 30;
+const MIN_FONT_PX = 16;
+const AVERAGE_GLYPH_EM = 0.6;
+
+function fitDisplay() {
+    const fit = display.clientWidth / (Math.max(display.textContent.length, 1) * AVERAGE_GLYPH_EM);
+    display.style.fontSize = Math.min(MAX_FONT_PX, Math.max(MIN_FONT_PX, fit)) + 'px';
+}
 
 function press(action) {
     calc.press(action);
     display.textContent = calc.text;
+    fitDisplay();
+    display.classList.toggle('invalid', calc.invalid);
     preview.textContent = calc.preview;
+    if (calc.notice) {
+        showToast(calc.notice);
+    }
 }
 
 keypad.addEventListener('click', (event) => {
@@ -34,15 +60,15 @@ const sciKey = (label, aria, type, value) => ({ label, aria, action: { type, val
 const signKey = sciKey('+/-', 'Toggle sign', 'sign');
 
 const SCI_KEYS = {
-    sqrt: [sciKey('√', 'Square root', 'wrap', '√('), sciKey('∛', 'Cube root', 'wrap', '∛(')],
-    abs: [sciKey('|x|', 'Absolute value', 'wrap', 'abs('), sciKey('2^x', '2 to the power of x', 'wrap', '2^(')],
+    sqrt: [sciKey('√', 'Square root', 'function', '√('), sciKey('∛', 'Cube root', 'function', '∛(')],
+    abs: [sciKey('|x|', 'Absolute value', 'function', 'abs('), sciKey('2^x', '2 to the power of x', 'function', '2^(')],
     sin: [sciKey('sin', 'Sine', 'function', 'sin('), sciKey('sin⁻¹', 'Inverse sine', 'function', 'sin⁻¹(')],
     cos: [sciKey('cos', 'Cosine', 'function', 'cos('), sciKey('cos⁻¹', 'Inverse cosine', 'function', 'cos⁻¹(')],
     tan: [sciKey('tan', 'Tangent', 'function', 'tan('), sciKey('tan⁻¹', 'Inverse tangent', 'function', 'tan⁻¹(')],
     pi: [sciKey('π', 'Pi', 'constant', 'π'), sciKey('x^3', 'x cubed', 'power', '3')],
     ln: [sciKey('ln', 'Natural log', 'function', 'ln('), sciKey('sinh', 'Hyperbolic sine', 'function', 'sinh(')],
     log: [sciKey('log', 'Log base 10', 'function', 'log('), sciKey('cosh', 'Hyperbolic cosine', 'function', 'cosh(')],
-    reciprocal: [sciKey('1/x', 'Reciprocal', 'wrap', '1/('), sciKey('tanh', 'Hyperbolic tangent', 'function', 'tanh(')],
+    reciprocal: [sciKey('1/x', 'Reciprocal', 'reciprocal'), sciKey('tanh', 'Hyperbolic tangent', 'function', 'tanh(')],
     econst: [sciKey('e', "Euler's number", 'constant', 'e'), sciKey('x!', 'Factorial', 'postfix', '!')],
     exp: [sciKey('e^x', 'e to the x', 'function', 'e^('), sciKey('sinh⁻¹', 'Inverse hyperbolic sine', 'function', 'sinh⁻¹(')],
     square: [sciKey('x²', 'x squared', 'power', '2'), sciKey('cosh⁻¹', 'Inverse hyperbolic cosine', 'function', 'cosh⁻¹(')],

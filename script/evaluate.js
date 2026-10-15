@@ -7,7 +7,7 @@
 // Grammar, lowest precedence first. A group still open at the end of the
 // input is closed implicitly, which is how "=" auto-closes parentheses.
 //
-//   expression := term (("+" | "-") term)*
+//   expression := term (("+" | "-") term)*   ("a+b%" / "a-b%" mean b% OF a)
 //   term       := unary (("*" | "/") unary)*
 //   unary      := sign unary | power
 //   power      := postfixed ("^" unary)?
@@ -18,6 +18,17 @@ const CONSTANTS = {
     'π': Math.PI,
     e: Math.E,
 };
+
+const DIVIDE_BY_ZERO = "Can't divide by zero.";
+const UNDEFINED_RESULT = "Can't show undefined result.";
+
+// The phone does its arithmetic in decimal, so 0.1+0.2-0.3 is exactly 0.
+// Rounding every intermediate result to 15 significant digits hides the
+// binary-float dust (0.30000000000000004) the same way.
+const clean = (x) => parseFloat(x.toPrecision(15));
+
+// sin(180deg) is 0 on the phone, not 1.2e-16.
+const snap = (x) => (Math.abs(x) < 1e-12 ? 0 : x);
 
 const toRadians = (x, angleMode) => (angleMode === 'deg' ? (x * Math.PI) / 180 : x);
 const fromRadians = (x, angleMode) => (angleMode === 'deg' ? (x * 180) / Math.PI : x);
@@ -37,9 +48,9 @@ function factorial(n) {
 // one-line change here plus a key in the scientific keypad.
 const FUNCTIONS = {
     '(': (x) => x,
-    'sin(': (x, angleMode) => Math.sin(toRadians(x, angleMode)),
-    'cos(': (x, angleMode) => Math.cos(toRadians(x, angleMode)),
-    'tan(': (x, angleMode) => Math.tan(toRadians(x, angleMode)),
+    'sin(': (x, angleMode) => snap(Math.sin(toRadians(x, angleMode))),
+    'cos(': (x, angleMode) => snap(Math.cos(toRadians(x, angleMode))),
+    'tan(': (x, angleMode) => snap(Math.tan(toRadians(x, angleMode))),
     'sin⁻¹(': (x, angleMode) => fromRadians(Math.asin(x), angleMode),
     'cos⁻¹(': (x, angleMode) => fromRadians(Math.acos(x), angleMode),
     'tan⁻¹(': (x, angleMode) => fromRadians(Math.atan(x), angleMode),
@@ -56,7 +67,6 @@ const FUNCTIONS = {
     'abs(': Math.abs,
     'e^(': Math.exp,
     '2^(': (x) => 2 ** x,
-    '1/(': (x) => 1 / x,
 };
 
 const POSTFIX = {
@@ -64,10 +74,14 @@ const POSTFIX = {
     '!': factorial,
 };
 
-// Throws if the tokens aren't a complete expression or the result isn't a
-// finite number (division by zero, sqrt of a negative, ...).
+// Throws a SyntaxError if the tokens aren't a complete expression, and a
+// RangeError (message = what to tell the user) if the result isn't a finite
+// number (division by zero, sqrt of a negative, ...).
 function evaluate(tokens, angleMode) {
     let pos = 0;
+    let level = 0; // how many groups deep the parser is
+    let percentEnd = null; // where the last "%" was consumed, and at which level
+    let termIsPercent = false; // did the term just parsed consist of one "x%"?
 
     const peek = () => tokens[pos];
     const peekOperator = (...texts) => peek()?.type === 'operator' && texts.includes(peek().text);
@@ -77,18 +91,26 @@ function evaluate(tokens, angleMode) {
         while (peekOperator('+', '-')) {
             const op = tokens[pos++].text;
             const rhs = parseTerm();
-            value = op === '+' ? value + rhs : value - rhs;
+            // "a+b%" adds b% OF a (100+50% is 150), unlike "a*b%" where b% is just b/100.
+            const amount = termIsPercent ? value * rhs : rhs;
+            value = clean(op === '+' ? value + amount : value - amount);
         }
         return value;
     }
 
     function parseTerm() {
         let value = parseUnary();
+        let isSingleFactor = true;
         while (peekOperator('*', '/')) {
+            isSingleFactor = false;
             const op = tokens[pos++].text;
             const rhs = parseUnary();
-            value = op === '*' ? value * rhs : value / rhs;
+            if (op === '/' && rhs === 0) {
+                throw new RangeError(DIVIDE_BY_ZERO);
+            }
+            value = clean(op === '*' ? value * rhs : value / rhs);
         }
+        termIsPercent = isSingleFactor && percentEnd?.pos === pos && percentEnd.level === level;
         return value;
     }
 
@@ -111,7 +133,9 @@ function evaluate(tokens, angleMode) {
     function parsePostfixed() {
         let value = parseAtom();
         while (peek()?.type === 'postfix') {
-            value = POSTFIX[tokens[pos++].text](value);
+            const text = tokens[pos++].text;
+            value = POSTFIX[text](value);
+            percentEnd = text === '%' ? { pos, level } : null;
         }
         return value;
     }
@@ -124,7 +148,10 @@ function evaluate(tokens, angleMode) {
             case 'constant':
                 return token.value;
             case 'open': {
-                const value = FUNCTIONS[token.text](parseExpression(), angleMode);
+                level++;
+                const inner = parseExpression();
+                level--;
+                const value = FUNCTIONS[token.text](inner, angleMode);
                 if (peek()?.type === 'close') {
                     pos++;
                 }
@@ -140,7 +167,7 @@ function evaluate(tokens, angleMode) {
         throw new SyntaxError('Unexpected token');
     }
     if (!Number.isFinite(value)) {
-        throw new RangeError('Result is not a finite number');
+        throw new RangeError(UNDEFINED_RESULT);
     }
     return value;
 }
