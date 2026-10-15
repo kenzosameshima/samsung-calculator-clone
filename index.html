@@ -16,23 +16,33 @@
         <section class="calculator dark" aria-labelledby="calculator-heading">
             <h1 id="calculator-heading" class="visually-hidden">Calculator</h1>
 
-            <button type="button" id="sci-toggle" class="mode-toggler" aria-pressed="false" aria-label="Toggle scientific mode">fx</button>
+            <button type="button" id="history-toggle" class="mode-toggler" aria-label="History">
+                <svg class="icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M3.5 12a8.5 8.5 0 1 0 2.6-6.1"/><path d="M3.5 4.5v4.5H8"/><path d="M12 7.5V12l3 2"/></svg>
+            </button>
+            <button type="button" id="sci-toggle" class="mode-toggler" aria-pressed="false" aria-label="Toggle scientific mode">
+                <svg class="icon icon-scientific" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="3" y="3" width="18" height="18" rx="4"/><path d="M7 12.5l2.2 2.8 3-6.3h4.3"/></svg>
+                <svg class="icon icon-basic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="3" y="3" width="18" height="18" rx="4"/><path d="M6.5 8.5h4M8.5 6.5v4M13.5 15.5h4"/><circle cx="15.5" cy="13.4" r=".5"/><circle cx="15.5" cy="17.6" r=".5"/></svg>
+            </button>
             <button type="button" id="rotate-toggle" class="mode-toggler rotate-toggler" aria-pressed="false" aria-label="Toggle landscape layout">&#8635;</button>
             <button type="button" class="theme-toggler active" aria-label="Toggle light and dark theme"></button>
 
-            <output id="preview" aria-hidden="true"></output>
             <output id="display" aria-live="polite" aria-atomic="true"></output>
+            <output id="preview" aria-hidden="true"></output>
             <div id="toast" class="toast" role="status" hidden></div>
 
             <div class="pad">
                 <div class="buttons scientific-buttons" id="scientific-buttons" role="group" aria-label="Scientific functions" hidden>
-                    <button type="button" class="btn-operator" id="sci-shift" aria-pressed="false" aria-label="Shift">2nd</button>
+                    <button type="button" class="btn-operator" id="sci-shift" aria-pressed="false" aria-label="Shift">
+                        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 8h15M15 4l4 4-4 4"/><path d="M20 16H5M9 12l-4 4 4 4"/></svg>
+                    </button>
                     <button type="button" class="btn-operator" id="sci-angle" aria-label="Angle unit: degrees">Deg</button>
                 </div>
 
                 <div class="buttons" id="keypad" role="group" aria-label="Calculator keypad">
                     <button type="button" class="btn-operator" id="clear" data-type="clear" aria-label="Clear">C</button>
-                    <button type="button" class="btn-operator" data-type="backspace" aria-label="Backspace">&#9003;</button>
+                    <button type="button" class="btn-operator" data-type="backspace" aria-label="Backspace">
+                        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M9 5.5h10.5A1.5 1.5 0 0 1 21 7v10a1.5 1.5 0 0 1-1.5 1.5H9L2.8 12z"/><path d="M12.5 9.5l5 5M17.5 9.5l-5 5"/></svg>
+                    </button>
                     <button type="button" class="btn-operator" data-type="postfix" data-value="%" aria-label="Percent">&percnt;</button>
                     <button type="button" class="btn-operator" data-type="operator" data-value="/" aria-label="Divide">&divide;</button>
 

@@ -5,7 +5,7 @@ A calculator built with semantic HTML, CSS, and vanilla JavaScript, modeled afte
 ## Features
 
 - Standard arithmetic (`+`, `-`, `×`, `÷`), percentage, and backspace
-- A live preview of the current expression's result above the display, updated as you type; a lone number has no preview
+- A live preview of the current expression's result, shown in smaller gray text below the expression and updated as you type; a lone number has no preview. In the expression, `+ - × ÷ %` are highlighted in the accent color (teal in basic mode, blue in scientific)
 - Parentheses with Samsung-calculator-style behavior:
   - repeated `(` only opens further until a number is typed, then it starts closing
   - `+`/`-` right after `(` are sign marks, not closing triggers
@@ -23,6 +23,7 @@ A calculator built with semantic HTML, CSS, and vanilla JavaScript, modeled afte
 - Results are rounded to 10 decimals, and written in exponent form when huge or tiny (`1.00000000E+22`, `3.33333333E-7`, from 1e15 and below 1e-6); arithmetic is cleaned to 15 significant digits so `0.1+0.2-0.3` is `0`. An exponent-form result is kept as a single value, so you can keep calculating with it
 - Input limits: 15 digits per number (10 after the decimal point; the 16th digit is refused with a "Can't enter more than 15 digits." toast), no leading zeros (`0005` is `5`), thousands separators in the display and preview, and a text that shrinks to fit as the expression grows
 - `=` never wipes your work: an incomplete expression (`5+`) and a lone number are left alone, and one with no defined result (`1/0`, `√` of a negative, `171!`) stays on the display in red with a toast ("Can't divide by zero." / "Can't show undefined result.")
+- A history button (top left) in the phone's position; it is a placeholder for now and does nothing yet
 - Light/dark theme toggle, with colors matched to the phone's calculator (green accent in basic mode, blue in scientific)
 - A rotate button (↻) that switches to a landscape layout: the keypad fills the width, or with `fx` on, scientific keys sit beside it; the rotation animates smoothly
 

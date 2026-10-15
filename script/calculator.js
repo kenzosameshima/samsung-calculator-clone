@@ -289,6 +289,15 @@ function createCalculator() {
             return tokens.map(displayOf).join('');
         },
 
+        // The display as pieces, so the UI can highlight the arithmetic
+        // operators and "%" (the phone shows them in the accent color).
+        get segments() {
+            return tokens.map((t) => ({
+                text: displayOf(t),
+                highlight: (t.type === 'operator' && '+-*/'.includes(t.text)) || (t.type === 'postfix' && t.text === '%'),
+            }));
+        },
+
         // True after "=" on an expression with no defined result; cleared by
         // the next key.
         get invalid() {

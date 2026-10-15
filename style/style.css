@@ -30,8 +30,9 @@ a {
     color: #fff;
 }
 
+/* A muted dusk gradient: close enough in tone to the card that it doesn't glare against it. */
 body {
-    background-image: linear-gradient(rgba(79,51,176,1), rgba(210,53,165));
+    background-image: linear-gradient(#3a3560, #6b4372);
 }
 
 .container {
@@ -107,8 +108,50 @@ body {
     color: #fff;
 }
 
+#sci-toggle {
+    left: 90px;
+}
+
 .rotate-toggler {
-    left: 85px;
+    left: 150px;
+}
+
+.btn-operator sup {
+    font-size: 0.65em;
+    line-height: 0;
+}
+
+.icon {
+    display: block;
+    width: 18px;
+    height: 18px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.icon circle {
+    fill: currentColor;
+    stroke: none;
+}
+
+.btn-operator .icon {
+    width: 26px;
+    height: 26px;
+    margin: auto;
+}
+
+.calculator.compact .btn-operator .icon {
+    width: 20px;
+    height: 20px;
+}
+
+/* The fx button shows what it switches to: the √ calculator in basic mode, the + / ÷ one in scientific. */
+#sci-toggle[aria-pressed="false"] .icon-basic,
+#sci-toggle[aria-pressed="true"] .icon-scientific {
+    display: none;
 }
 
 .theme-toggler.active {
@@ -131,21 +174,9 @@ body {
     z-index: -1;
 }
 
-#preview {
-    margin: 50px 10px 0;
-    height: 20px;
-    display: flex;
-    align-items: flex-end;
-    justify-content: flex-end;
-    font-size: 14px;
-    opacity: 0.6;
-    overflow-x: hidden;
-    white-space: nowrap;
-}
-
 #display {
-    margin: 0 10px;
-    height: 150px;
+    margin: 50px 10px 0;
+    height: 110px;
     width: auto;
     max-width: 270px;
     transition: color 300ms ease, height var(--move), max-width var(--move);
@@ -153,8 +184,20 @@ body {
     align-items: flex-end;
     justify-content: flex-end;
     font-size: 30px;
-    margin-bottom: 20px;
     overflow-x: scroll;
+}
+
+#preview {
+    margin: 0 10px 20px;
+    height: 60px;
+    display: flex;
+    align-items: flex-start;
+    justify-content: flex-end;
+    padding-top: 8px;
+    font-size: 22px;
+    opacity: 0.6;
+    overflow-x: hidden;
+    white-space: nowrap;
 }
 
 #display::-webkit-scrollbar {
@@ -267,7 +310,11 @@ button:active {
 
 .calculator.landscape #display {
     max-width: 620px;
-    height: 70px;
+    height: 40px;
+}
+
+.calculator.landscape #preview {
+    height: 50px;
 }
 
 .calculator.landscape .pad {
@@ -320,6 +367,7 @@ button:active {
     --text: #222;
     --clear: #e8685f;
     --accent: #22b573;
+    --highlight: #1a9a82;
     background-color: var(--bg);
 }
 
@@ -331,15 +379,18 @@ button:active {
     --sci: #181d33;
     --text: #f8f8f8;
     --accent: #1f8f7b;
+    --highlight: #4fd1b8;
 }
 
 /* scientific layouts use the blue accent */
 .calculator.compact {
     --accent: #4a86f7;
+    --highlight: #3a56c8;
 }
 
 .calculator.dark.compact {
     --accent: #3a56c8;
+    --highlight: #8199f5;
 }
 
 .calculator #display,
@@ -351,6 +402,15 @@ button:active {
    display, tinted like the Clear key. */
 .calculator #display.invalid {
     color: var(--clear);
+}
+
+/* + - × ÷ % in the expression are highlighted, like the phone's */
+#display .op {
+    color: var(--highlight);
+}
+
+.calculator #display.invalid .op {
+    color: inherit;
 }
 
 .toast {
@@ -384,7 +444,8 @@ button:active {
     box-shadow: var(--key-shadow);
 }
 
-.calculator button#clear {
+.calculator button#clear,
+.calculator button[data-type="backspace"] {
     background-color: var(--key);
     color: var(--clear);
 }
