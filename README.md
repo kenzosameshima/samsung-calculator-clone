@@ -5,7 +5,7 @@ A calculator built with semantic HTML, CSS, and vanilla JavaScript, modeled afte
 ## Features
 
 - Standard arithmetic (`+`, `-`, `×`, `÷`), percentage, and backspace
-- A live preview of the current expression's result, shown in smaller gray text below the expression and updated as you type; a lone number has no preview. In the expression, `+ - × ÷ %` are highlighted in the accent color (teal in basic mode, blue in scientific)
+- A live preview of the current expression's result, shown in smaller gray text below the expression and updated as you type; a lone number has no preview. In the expression, `+ - × ÷ %` are highlighted in the accent color (green in basic mode, blue in scientific)
 - Parentheses with Samsung-calculator-style behavior:
   - repeated `(` only opens further until a number is typed, then it starts closing
   - `+`/`-` right after `(` are sign marks, not closing triggers
@@ -39,4 +39,9 @@ Open `index.html` in a browser — no build step or dependencies required.
 - `script/evaluate.js` — evaluates a token list to a number (a small recursive-descent parser; no `eval`)
 - `script/calculator.js` — calculator state and input rules as a token list, with no DOM access
 - `script/script.js` — DOM wiring: buttons, keyboard, the scientific keypad table, and rendering
+- `LICENSE` — MIT
 - `media/` — favicon, and `fonts/` with the Figtree fallback font and its license
+
+## License
+
+[MIT](LICENSE). The bundled Figtree font keeps its own license (`media/fonts/OFL.txt`).
