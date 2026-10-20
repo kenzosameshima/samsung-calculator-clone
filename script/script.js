@@ -60,7 +60,93 @@ function press(action) {
     if (calc.notice) {
         showToast(calc.notice);
     }
+    if (calc.entry) {
+        addToHistory(calc.entry);
+        if (action.type === 'equals') {
+            setHistoryOpen(false);
+        }
+    }
 }
+
+// ---- history ----------------------------------------------------------------
+// The last 20 calculations, kept in localStorage. Tapping a formula puts it
+// back on the display; tapping a result types it onto the expression.
+
+const MAX_HISTORY = 20;
+const HISTORY_KEY = 'calculator-history';
+const historyToggleBtn = document.querySelector('#history-toggle');
+const historyPanel = document.querySelector('#history');
+const historyList = document.querySelector('#history-list');
+
+let entries = [];
+try {
+    entries = JSON.parse(localStorage.getItem(HISTORY_KEY)) ?? [];
+} catch (error) {
+    // no storage, or garbage in it: start empty
+}
+
+function saveHistory() {
+    try {
+        localStorage.setItem(HISTORY_KEY, JSON.stringify(entries));
+    } catch (error) {
+        // history just won't survive a reload
+    }
+}
+
+function historyButton(className, text, index) {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = className;
+    button.dataset.index = index;
+    button.textContent = text;
+    return button;
+}
+
+function renderHistory() {
+    historyList.replaceChildren(...entries.flatMap((entry, index) => [
+        historyButton('history-formula', entry.formula, index),
+        historyButton('history-result', '=' + entry.result, index),
+    ]));
+    historyList.scrollTop = historyList.scrollHeight;
+    historyToggleBtn.disabled = entries.length === 0;
+}
+
+function addToHistory(entry) {
+    entries = [...entries, entry].slice(-MAX_HISTORY);
+    saveHistory();
+    renderHistory();
+}
+
+function setHistoryOpen(isOpen) {
+    historyPanel.hidden = !isOpen;
+    calculator.classList.toggle('history-open', isOpen);
+    calculator.classList.toggle('compact', calculator.classList.contains('sci') && !isOpen);
+    historyToggleBtn.setAttribute('aria-pressed', String(isOpen));
+    historyToggleBtn.setAttribute('aria-label', isOpen ? 'Keypad' : 'History');
+    // the keys under the panel stay out of reach, as on the phone
+    keypad.querySelectorAll('button[data-type]:not([data-type="operator"]):not([data-type="equals"])')
+        .forEach((button) => { button.style.visibility = isOpen ? 'hidden' : ''; });
+    historyList.scrollTop = historyList.scrollHeight;
+}
+
+historyToggleBtn.addEventListener('click', () => setHistoryOpen(historyPanel.hidden));
+
+historyList.addEventListener('click', (event) => {
+    const button = event.target.closest('button[data-index]');
+    if (button) {
+        const type = button.classList.contains('history-formula') ? 'recall' : 'insertResult';
+        press({ type, value: entries[button.dataset.index] });
+    }
+});
+
+document.querySelector('#history-clear').addEventListener('click', () => {
+    entries = [];
+    saveHistory();
+    renderHistory();
+    setHistoryOpen(false);
+});
+
+renderHistory();
 
 keypad.addEventListener('click', (event) => {
     const button = event.target.closest('button[data-type]');
@@ -143,11 +229,13 @@ updateAngleLabel();
 
 sciToggleBtn.addEventListener('click', () => {
     const isOpen = sciPanel.hidden;
+    setHistoryOpen(false); // the phone closes the panel when the mode switches
     sciPanel.hidden = !isOpen;
     sciToggleBtn.setAttribute('aria-pressed', String(isOpen));
     // Keep the whole buttons area the same height it had in normal mode by
     // shrinking every button (both grids) into shorter, pill-shaped rows
     // instead of letting the calculator grow taller.
+    calculator.classList.toggle('sci', isOpen);
     calculator.classList.toggle('compact', isOpen);
 });
 

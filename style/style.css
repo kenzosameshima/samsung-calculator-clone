@@ -174,6 +174,23 @@ body {
     height: 20px;
 }
 
+/* The history button shows the keypad icon while the panel is open; it is not an
+   accent-colored toggle, and is dimmed when there is nothing to show. */
+#history-toggle[aria-pressed="false"] .icon-keypad,
+#history-toggle[aria-pressed="true"] .icon-history {
+    display: none;
+}
+
+#history-toggle[aria-pressed="true"] {
+    background-color: var(--key);
+    color: var(--text);
+}
+
+.mode-toggler:disabled {
+    opacity: 0.4;
+    cursor: default;
+}
+
 /* The fx button shows what it switches to: the √ calculator in basic mode, the + / ÷ one in scientific. */
 #sci-toggle[aria-pressed="false"] .icon-basic,
 #sci-toggle[aria-pressed="true"] .icon-scientific {
@@ -440,6 +457,78 @@ button:active {
     grid-template-columns: repeat(4, 17.1%);
 }
 
+/* history panel: covers the keypad's left three columns (the operator column stays live) */
+#keypad {
+    position: relative;
+}
+
+.history {
+    grid-area: 1 / 1 / 6 / 4;
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    padding-right: 10px;
+    border-right: 1px solid var(--op);
+    z-index: 1;
+}
+
+/* with the panel open the phone drops the scientific keys and uses the basic layout (script.js also drops .compact) */
+.calculator.history-open .scientific-buttons {
+    display: none;
+}
+
+.history[hidden] {
+    display: none;
+}
+
+.history-list {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    scrollbar-width: none;
+    padding-bottom: 6px;
+}
+
+/* margin-top:auto on the first entry pins a short list to the bottom without
+   breaking scrolling of a long one */
+.history-list > :first-child {
+    margin-top: auto;
+}
+
+.calculator .history button {
+    display: block;
+    flex: none;
+    width: 100%;
+    height: auto;
+    margin: 0;
+    padding: 0;
+    border-radius: 0;
+    background: none;
+    box-shadow: none;
+    text-align: right;
+    font-size: 15px;
+    color: var(--text);
+}
+
+.calculator .history button.history-result {
+    color: var(--highlight);
+    font-size: 22px;
+    margin-bottom: 18px;
+}
+
+.calculator .history button.history-formula {
+    overflow-wrap: anywhere;
+}
+
+.calculator .history button.history-clear {
+    height: 44px;
+    border-radius: 22px;
+    background-color: var(--op);
+}
+
 /* palette, matched to the phone's calculator (light / dark; green / blue accent) */
 
 .calculator {
@@ -467,12 +556,12 @@ button:active {
 }
 
 /* scientific layouts use the blue accent */
-.calculator.compact {
+.calculator.sci {
     --accent: #4a86f7;
     --highlight: #3a56c8;
 }
 
-.calculator.dark.compact {
+.calculator.dark.sci {
     --accent: #3a56c8;
     --highlight: #8199f5;
 }

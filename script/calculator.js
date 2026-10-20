@@ -5,7 +5,8 @@
 //
 // Drive it with press({ type, value }):
 //   digit, decimal, operator, paren, postfix, power, function, constant,
-//   reciprocal, sign, backspace, clear, equals, angle
+//   reciprocal, sign, backspace, clear, equals, angle, and for the history
+//   recall / insertResult (whose value is a saved entry)
 //
 // It mirrors the phone's calculator: "=" on something it can't evaluate
 // leaves the expression alone (and flags it as `invalid` with a `notice` to
@@ -61,6 +62,7 @@ function createCalculator() {
     let invalid = false;
     let notice = '';
     let angleMode = 'deg';
+    let entry = null;
 
     const last = () => tokens[tokens.length - 1];
     const room = () => MAX_LENGTH - textOf(tokens).length;
@@ -233,7 +235,15 @@ function createCalculator() {
             return;
         }
         try {
-            tokens = resultTokens(evaluate(tokens, angleMode));
+            const value = evaluate(tokens, angleMode);
+            const result = resultTokens(value);
+            entry = {
+                tokens: tokens.map((t) => ({ ...t })),
+                value,
+                formula: tokens.map(displayOf).join(''),
+                result: result.map(displayOf).join(''),
+            };
+            tokens = result;
             justEvaluated = true;
         } catch (error) {
             if (error instanceof RangeError) {
@@ -243,7 +253,27 @@ function createCalculator() {
         }
     }
 
+    // History: an entry's formula replaces the expression; its result is typed
+    // onto the end of it, so "7+3" and a stored 20 make "7+320".
+    function recall(saved) {
+        tokens = saved.tokens.map((t) => ({ ...t }));
+    }
+
+    function insertResult(saved) {
+        const [first, ...rest] = resultTokens(saved.value);
+        const tail = last();
+        if (first.type === 'number' && tail?.type === 'number') {
+            if (tail.text.length + first.text.length <= MAX_DIGITS && !(tail.text.includes('.') && first.text.includes('.'))) {
+                tail.text += first.text;
+            }
+        } else {
+            pushOperand(first, ...rest);
+        }
+    }
+
     const handlers = {
+        recall,
+        insertResult,
         digit: typeDigit,
         decimal: typeDecimal,
         operator: typeOperator,
@@ -269,6 +299,7 @@ function createCalculator() {
     return {
         press({ type, value }) {
             notice = '';
+            entry = null;
             // A mode switch, not an edit: leaves the expression (and whether
             // it's a fresh result) untouched.
             if (type === 'angle') {
@@ -307,6 +338,12 @@ function createCalculator() {
         // A short message the UI should flash for the key just pressed, or ''.
         get notice() {
             return notice;
+        },
+
+        // The calculation the key just pressed finished ({ tokens, value,
+        // formula, result }), for the UI to file in the history, or null.
+        get entry() {
+            return entry;
         },
 
         get angleMode() {
