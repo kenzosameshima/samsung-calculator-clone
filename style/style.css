@@ -586,6 +586,11 @@ button:active {
     color: inherit;
 }
 
+/* the last key of an incomplete expression after "=" ("5+" -> the "+"), like the phone */
+#display .error {
+    color: var(--clear);
+}
+
 .toast {
     position: absolute;
     left: 50%;
