@@ -22,6 +22,7 @@ const RESULT_DECIMALS = 10;
 const EXPONENT_FROM = 1e15;
 const EXPONENT_BELOW = 1e-6;
 const TOO_MANY_DIGITS = "Can't enter more than 15 digits.";
+const INVALID_FORMAT = 'Invalid format used.';
 
 const VALUE_TYPES = ['number', 'constant', 'close', 'postfix'];
 
@@ -60,6 +61,7 @@ function createCalculator() {
     let tokens = [];
     let justEvaluated = false;
     let invalid = false;
+    let incomplete = false;
     let notice = '';
     let angleMode = 'deg';
     let entry = null;
@@ -227,9 +229,10 @@ function createCalculator() {
         }
     }
 
-    // A lone number is already its own result, and an incomplete expression
-    // ("5+") has none: "=" does nothing for either. One that can't be
-    // evaluated (1/0, sqrt of a negative) stays as typed, flagged invalid.
+    // A lone number is already its own result: "=" does nothing for it. An
+    // incomplete expression ("5+") stays as typed with its last key flagged
+    // and a notice; so does one that can't be evaluated (1/0, sqrt of a
+    // negative), flagged invalid.
     function equals() {
         if (tokens.length === 0 || (tokens.length === 1 && tokens[0].type === 'number')) {
             return;
@@ -249,6 +252,9 @@ function createCalculator() {
             if (error instanceof RangeError) {
                 invalid = true;
                 notice = error.message;
+            } else {
+                incomplete = true;
+                notice = INVALID_FORMAT;
             }
         }
     }
@@ -312,6 +318,7 @@ function createCalculator() {
                 tokens = [];
             }
             invalid = false;
+            incomplete = false;
             justEvaluated = false;
             handlers[type](value);
         },
@@ -321,10 +328,12 @@ function createCalculator() {
         },
 
         // The display as pieces, so the UI can highlight the arithmetic
-        // operators and "%" (the phone shows them in the accent color).
+        // operators and "%" (the phone shows them in the accent color), and
+        // the last key red after "=" on an incomplete expression.
         get segments() {
-            return tokens.map((t) => ({
+            return tokens.map((t, i) => ({
                 text: displayOf(t),
+                error: incomplete && i === tokens.length - 1,
                 highlight: (t.type === 'operator' && '+-*/'.includes(t.text)) || (t.type === 'postfix' && t.text === '%'),
             }));
         },

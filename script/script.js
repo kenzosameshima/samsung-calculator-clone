@@ -45,12 +45,12 @@ new ResizeObserver(fitDisplay).observe(display);
 
 function press(action) {
     calc.press(action);
-    display.replaceChildren(...calc.segments.map(({ text, highlight }) => {
-        if (!highlight) {
+    display.replaceChildren(...calc.segments.map(({ text, highlight, error }) => {
+        if (!highlight && !error) {
             return document.createTextNode(text);
         }
         const span = document.createElement('span');
-        span.className = 'op';
+        span.className = error ? 'error' : 'op';
         span.textContent = text;
         return span;
     }));
